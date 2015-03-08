@@ -19,7 +19,7 @@ void setup()
     vw_setup(500);  // Bits per sec
     pinMode(13, OUTPUT);  // RX
     pinMode(7, OUTPUT);  // TX
-    pinMode(4, OUTPUT);  // RELE
+    //pinMode(4, OUTPUT);  // RELE
     digitalWrite(13,LOW);
     digitalWrite(7,LOW);
     digitalWrite(4,LOW);  
@@ -48,25 +48,36 @@ void setup()
       Serial.print(rx);
       int var=1;
       if (msg1.equals(rx)) {
+         vw_rx_stop(); 
          digitalWrite(7,1); 
          Serial.println("-Done");
            //sendSgn_1(); 
       } 
-      if (msg2.equals(rx)){           
+      if (msg2.equals(rx)){
+        vw_rx_stop();         
         digitalWrite(7,0);        
         Serial.println("-Done");
            //sendSgn_0();       
-      }  
-       checkStatus();     
+      }   
+       int i = 0;
+       while (i<5)
+       {      
+         checkStatus();
+         i++;
+       }
+      //delay(5000);
+      vw_rx_start();     
     }    
 }
 void checkStatus()
 {
+  
   int state = digitalRead(4);
   if (state == HIGH)
     sendSgn_1();
   if (state == LOW)
     sendSgn_0();
+  
 }
 
 void sendSgn_0()

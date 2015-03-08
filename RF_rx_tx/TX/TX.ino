@@ -23,7 +23,7 @@ void setup() {
       digitalWrite(13,LOW);
       digitalWrite(7,LOW);
       
-      vw_rx_start(); 
+      vw_rx_start();
 }
 
 void loop(){    
@@ -34,35 +34,51 @@ void loop(){
      
      if (oldButtonState!=buttonStateA)
      {
+       
        int var =1;
        int res=0;
-       while(var < 10 && res == 0){
+       unsigned long TimerA ;//   "ALWAYS use unsigned long for timers..."       
+                             
+       while(var < 10){
          
          // Trasmettitore
          if(buttonStateA == LOW)
-           {
-             sendSgn_0();
-             res = ricevi(msg2);
-           }
+         {
+             sendSgn_0(); 
+             TimerA= millis();
+             while(millis()-TimerA <= 5000UL && var < 10)
+             {
+               if (ricevi(msg2)==1)
+                 var=100; 
+             }          
+         }
          if(buttonStateA == HIGH)
          {
-           sendSgn_1();
-           res = ricevi(msg1);
-          } 
-           var ++;
-         
-           delay (100);
+             sendSgn_1();
+             TimerA= millis();
+             while(millis()-TimerA <= 5000UL && var < 10)
+             {
+               if (ricevi(msg1)==1)
+                 var=100; 
+             }   
+         } 
+         var ++;
+                    
        }
+       
      }
      oldButtonState = buttonStateA;
 
     // Ricevitore
-    
+        
+    //ricevi(msg1);
+      
 //----------------------
      delay(2000);
 }
 int ricevi(String retMsg)
 {
+  
    uint8_t buf[VW_MAX_MESSAGE_LEN];
    uint8_t buflen = VW_MAX_MESSAGE_LEN;
    
@@ -84,10 +100,12 @@ int ricevi(String retMsg)
          res =1;
       }     
   } 
+  
   return res;
 }
 void sendSgn(String msg)
 {
+  vw_rx_stop();
   strcpy(controller,msg.c_str());
   //controller=(char*) msg  ;
 	vw_send((uint8_t *)controller, strlen(controller));
@@ -99,7 +117,7 @@ void sendSgn(String msg)
         digitalWrite(13,1);        
         delay(500);
         digitalWrite(13,0);
-        
+  vw_rx_start();      
    //-----View Signal in Serial Monitor 
    Serial.println( msg);
 //   for(int i=0; i<strlen(controller); i=i+1){       
@@ -108,6 +126,7 @@ void sendSgn(String msg)
 }
 void sendSgn_1()
 {
+  vw_rx_stop();
   controller="SetPumpON"  ;
 	vw_send((uint8_t *)controller, strlen(controller));
 	vw_wait_tx(); // Wait until the whole message is gone
@@ -118,7 +137,7 @@ void sendSgn_1()
         digitalWrite(13,1);        
         delay(500);
         digitalWrite(13,0);
-        
+        vw_rx_start();
    //-----View Signal in Serial Monitor 
    Serial.println("SetPumpON");
 //   for(int i=0; i<strlen(controller); i=i+1){       
@@ -127,6 +146,7 @@ void sendSgn_1()
 }
 void sendSgn_0()
 {
+  vw_rx_stop();
   controller="SetPumpOFF"  ;
 	vw_send((uint8_t *)controller, strlen(controller));
 	vw_wait_tx(); // Wait until the whole message is gone
@@ -137,7 +157,7 @@ void sendSgn_0()
         digitalWrite(13,1);        
         delay(500);
         digitalWrite(13,0);
-        
+   vw_rx_start();
    //-----View Signal in Serial Monitor 
    Serial.println("SetPumpOFF");
 //   for(int i=0; i<strlen(controller); i=i+1){
